@@ -5,11 +5,9 @@ https://github.com/tjddus9597/Proxy-Anchor-CVPR2020/blob/master/code/losses.py
 """
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
 from tensorflow.keras import constraints, initializers, regularizers
 from tensorflow.keras.layers import Input, Layer
 from tensorflow.keras.models import Model
-from tensorflow.keras.regularizers import l2
 
 
 class ProxyAnchor(Layer):
@@ -17,7 +15,7 @@ class ProxyAnchor(Layer):
     def __init__(self,
                  units,
                  kernel_initializer="he_normal",
-                 kernel_regularizer=l2(K.epsilon()),
+                 kernel_regularizer=None,
                  kernel_constraint=None,
                  **kwargs):
         super(ProxyAnchor, self).__init__(**kwargs)
@@ -63,12 +61,10 @@ class ProxyAnchor(Layer):
 def proxy_anchor_loss(y_true, y_pred, margin=0.1, alpha=32):
     cosine_similarity = y_pred
     class_num = cosine_similarity.get_shape().as_list()[1]
-    P_one_hot = tf.one_hot(
-        indices=tf.argmax(y_true, axis=1),
-        depth=class_num,
-        on_value=None,
-        off_value=None,
-    )
+    P_one_hot = tf.one_hot(indices=tf.argmax(y_true, axis=1),
+                           depth=class_num,
+                           on_value=None,
+                           off_value=None)
     N_one_hot = 1.0 - P_one_hot
 
     pos_exp = tf.exp(-alpha * (cosine_similarity - margin))
